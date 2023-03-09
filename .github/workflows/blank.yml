@@ -1,0 +1,47 @@
+name: Python application
+
+on:
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: exec ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: 146.190.148.84
+          username: root
+          password: ${{secrets.PASSWORD}}
+          key: ${{secrets.KEY}}
+          port: 22
+          script: |
+            cd /root/microdervices
+            git pull origin main
+            pip install -r requirements.txt
+            supervisorctl restart main
+            supervisorctl restart service1
+            supervisorctl restart service2
+            supervisorctl restart service3
+            supervisorctl restart service4
+      - name: Run 
+        run: pytest --cov=tests  --cov-report=xml
+      - name: Codecov 
+        uses: codecov/codecov-action@v3
