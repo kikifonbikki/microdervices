@@ -23,7 +23,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+         
       - name: exec ssh
         uses: appleboy/ssh-action@master
         with:
@@ -34,9 +34,8 @@ jobs:
           port: 22
           script: |
             cd /root/microdervices
-            git pull origin main
+            git pull origin master
             pip install -r requirements.txt
-            supervisorctl restart main
             supervisorctl restart service1
             supervisorctl restart service2
             supervisorctl restart service3
